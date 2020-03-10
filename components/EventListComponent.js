@@ -5,11 +5,9 @@ import {
   View,
   StyleSheet,
   FlatList,
-  Button,
   TextInput,
-  SafeAreaView,
   Image,
-  Picker
+  Button
 } from "react-native";
 import { Dropdown } from "react-native-material-dropdown";
 
@@ -18,33 +16,20 @@ import geohash from "ngeohash";
 
 import * as Permissions from "expo-permissions";
 
-function Item({ title }) {
-  return (
-    <View style={styles.item}>
-      <Text style={styles.title}>{title}</Text>
-    </View>
-  );
-}
-
 export default class EventListComponent extends Component {
   constructor(props) {
     super(props);
-    this.showEvents = this.showEvents.bind(this);
     this.state = {
       localPermission: "unknown",
       position: "unknown",
       hashedLocation: "unknown",
       distance: 50,
-      region: {
-        latitude: 49.28355919,
-        latitudeDelta: 0.8014639600118514,
-        longitude: -123.1153489,
-        longitudeDelta: 0.6370953742537893
-      },
       events: {},
       searchString: "",
-      searchDistance: 50
+      searchDistance: 50,
+      refreshing: false
     };
+    this.updateSearch = this.updateSearch.bind(this);
   }
 
   _getLocationPermissions = async () => {
@@ -90,6 +75,7 @@ export default class EventListComponent extends Component {
                 events.push(responseJson._embedded.events[i]);
               }
             }
+            console.log("componentwillmount");
             this.setState({
               events: events,
               hashedLocation: hashedLocation
@@ -108,41 +94,50 @@ export default class EventListComponent extends Component {
     );
   }
 
+  updateSearch = () => {
+    if (this.state.searchString != "") {
+      var hashedLocation = this.state.hashedLocation;
+      var searchString = this.state.searchString;
+      fetch(
+        "https://app.ticketmaster.com/discovery/v2/events.json?geoPoint=" +
+          hashedLocation +
+          "&keyword=" +
+          searchString +
+          "&apikey=PGmtfFqe3FZdSKv39Yqih27wTCcgvPWO"
+      )
+        .then(response => response.json())
+        .then(responseJson => {
+          let events = [];
+          console.log(typeof responseJson);
+          if (typeof responseJson == "object") {
+            for (var i = 0; i < responseJson._embedded.events.length; i++) {
+              if (
+                responseJson._embedded.events[i].distance <
+                this.state.searchDistance
+              ) {
+                console.log(responseJson._embedded.events[i].name);
+                events.push(responseJson._embedded.events[i]);
+              }
+            }
+            console.log("updateSearch");
+            this.setState({
+              events: events
+            });
+          }
+        })
+        .catch(error => {
+          console.error(error);
+        });
+    }
+  };
+
   searchInput = userInput => {
     this.setState({ searchString: userInput });
   };
 
-  getEvents = () => {
-    return fetch(
-      "https://app.ticketmaster.com/discovery/v2/events.json?geoPoint=" +
-        this.state.hashedLocation +
-        "&apikey=PGmtfFqe3FZdSKv39Yqih27wTCcgvPWO"
-    )
-      .then(response => response.json())
-      .then(responseJson => {
-        for (var i = 0; i < responseJson._embedded.events.length; i++) {
-          console.log(responseJson._embedded.events[i].name);
-        }
-        return responseJson;
-      })
-      .catch(error => {
-        console.error(error);
-      });
-  };
-
-  showEvents() {
-    return this.state.events.forEach(function(event, i) {
-      this.state.event.push(
-        <View key={i} style="container">
-          <Text>{event.name}</Text>
-        </View>
-      );
-    });
-  }
-
   render() {
     var eventList = [];
-
+    console.log(this.state.searchString);
     let selectableDistance = [
       {
         value: 5
@@ -164,7 +159,6 @@ export default class EventListComponent extends Component {
       }
     }
 
-    console.log(this.state.searchDistance);
     return (
       <View style={styles.container}>
         <TextInput
@@ -181,6 +175,7 @@ export default class EventListComponent extends Component {
               this.setState({ searchDistance: value });
             }}
           />
+          <Button title="Search" onPress={() => this.updateSearch()} />
         </View>
 
         <FlatList
