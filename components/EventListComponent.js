@@ -16,7 +16,9 @@ import geohash from "ngeohash";
 
 import * as Permissions from "expo-permissions";
 
-export default class EventListComponent extends Component {
+import HeaderComponent from "./HeaderComponent";
+
+export default class EventListComponent extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -94,6 +96,27 @@ export default class EventListComponent extends Component {
   }
 
   updateSearch = () => {
+    this._getLocationPermissions();
+
+    navigator.geolocation.getCurrentPosition(position => {
+      console.log(position.coords);
+      console.log(
+        "My updated position: " +
+          position.coords.latitude +
+          ", " +
+          position.coords.longitude
+      );
+
+      var hashedLocation = geohash.encode(
+        position.coords.latitude,
+        position.coords.longitude
+      );
+
+      this.setState({
+        hashedLocation: hashedLocation
+      });
+    });
+
     if (this.state.searchString != "") {
       var hashedLocation = this.state.hashedLocation;
       var searchString = this.state.searchString;
@@ -102,6 +125,37 @@ export default class EventListComponent extends Component {
           hashedLocation +
           "&keyword=" +
           searchString +
+          "&apikey=PGmtfFqe3FZdSKv39Yqih27wTCcgvPWO"
+      )
+        .then(response => response.json())
+        .then(responseJson => {
+          let events = [];
+          console.log(typeof responseJson);
+          if (typeof responseJson == "object") {
+            for (var i = 0; i < responseJson._embedded.events.length; i++) {
+              if (
+                responseJson._embedded.events[i].distance <
+                this.state.searchDistance
+              ) {
+                console.log(responseJson._embedded.events[i].name);
+                events.push(responseJson._embedded.events[i]);
+              }
+            }
+            console.log("updateSearch");
+            this.setState({
+              events: events
+            });
+          }
+        })
+        .catch(error => {
+          console.error(error);
+        });
+    }
+    if (this.state.searchString == "") {
+      var hashedLocation = this.state.hashedLocation;
+      fetch(
+        "https://app.ticketmaster.com/discovery/v2/events.json?geoPoint=" +
+          hashedLocation +
           "&apikey=PGmtfFqe3FZdSKv39Yqih27wTCcgvPWO"
       )
         .then(response => response.json())
@@ -160,6 +214,8 @@ export default class EventListComponent extends Component {
 
     return (
       <View style={styles.container}>
+        <HeaderComponent />
+
         <TextInput
           style={styles.searchbar}
           underlineColorAndroid="transparent"
@@ -180,11 +236,19 @@ export default class EventListComponent extends Component {
         <FlatList
           data={eventList}
           renderItem={({ item }) => (
-            <TouchableOpacity>
+            <TouchableOpacity
+              onPress={() =>
+                this.props.navigation.navigate("Details", {
+                  someId: 100,
+                  eventUrl: item.url,
+                  imageUrl: item.images[0].url
+                })
+              }
+            >
               <Image
                 style={styles.item_image}
                 source={{ uri: item.images[0].url }}
-              ></Image>
+              />
               <Text style={styles.item_text}>
                 {item.name}
                 {"\n"}

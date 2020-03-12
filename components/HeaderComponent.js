@@ -22,8 +22,7 @@ const styles = StyleSheet.create({
   logo: {
     justifyContent: "center",
     alignItems: "center",
-    paddingBottom: 0,
-    marginTop: 10
+    paddingBottom: 0
   },
   header: {
     height: 100,
