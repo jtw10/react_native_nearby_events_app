@@ -1,16 +1,5 @@
 import React from "react";
-import {
-  TouchableOpacity,
-  Text,
-  View,
-  StyleSheet,
-  FlatList,
-  TextInput,
-  Image,
-  Button,
-  Linking
-} from "react-native";
-import PropTypes from "prop-types";
+import { Text, View, StyleSheet, Image, Linking } from "react-native";
 
 import HeaderComponent from "./HeaderComponent";
 
@@ -19,7 +8,36 @@ export default class EventDetailComponent extends React.Component {
 
   render() {
     const { navigation } = this.props;
+    const eventName = navigation.getParam("eventName", "No Event Name Found");
     const eventUrl = navigation.getParam("eventUrl", "www.ticketmaster.com");
+    const eventDistance = navigation.getParam(
+      "eventDistance",
+      "Distance information unavailable"
+    );
+    const eventDate = navigation.getParam(
+      "eventDate",
+      "Date information unavailable"
+    );
+    const eventTime = navigation.getParam(
+      "eventTime",
+      "Time information unavailable"
+    );
+    const eventStatus = navigation.getParam(
+      "eventStatus",
+      "Status information unvailable"
+    );
+    const eventInfo = navigation.getParam(
+      "eventInfo",
+      "Event information unavailable"
+    );
+    const eventMinPrice = navigation.getParam(
+      "eventMinPrice",
+      "Price information unavailable"
+    );
+    const eventMaxPrice = navigation.getParam(
+      "eventMaxPrice",
+      "Price information unavailable"
+    );
     const imageUrl = navigation.getParam(
       "imageUrl",
       "https://1m19tt3pztls474q6z46fnk9-wpengine.netdna-ssl.com/wp-content/themes/unbound/images/No-Image-Found-400x264.png"
@@ -27,13 +45,26 @@ export default class EventDetailComponent extends React.Component {
 
     return (
       <View style={styles.container}>
-        <Image style={styles.item_image} source={{ uri: imageUrl }} />
-        <Text
-          style={{ color: "blue" }}
-          onPress={() => Linking.openURL(eventUrl)}
-        >
-          Buy Tickets
-        </Text>
+        <HeaderComponent />
+
+        <Text style={styles.title}>{eventName}</Text>
+        <Image
+          style={styles.item_image}
+          source={{ uri: imageUrl }}
+          resizeMode="cover"
+        />
+        <View style={styles.item_text}>
+          <Text>Date: {eventDate}</Text>
+          <Text>Time: {eventTime}</Text>
+          <Text>Status: {eventStatus}</Text>
+          <Text>Info: {eventInfo}</Text>
+          <Text
+            style={{ color: "blue" }}
+            onPress={() => Linking.openURL(eventUrl)}
+          >
+            Buy Tickets
+          </Text>
+        </View>
       </View>
     );
   }
@@ -42,14 +73,6 @@ export default class EventDetailComponent extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1
-  },
-  listContainer: {
-    flex: 1
-  },
-  paragraph: {
-    margin: 6,
-    fontSize: 18,
-    textAlign: "center"
   },
   item_text: {
     backgroundColor: "#E3E4E5",
@@ -63,28 +86,25 @@ const styles = StyleSheet.create({
   },
   item_image: {
     padding: 80,
-    marginTop: 10,
     marginBottom: 0,
-    marginHorizontal: 16
+    marginHorizontal: 16,
+    height: 300
   },
   bottom_margin: {
     marginTop: 10,
     padding: 6
   },
   title: {
-    fontSize: 32
-  },
-  searchbar: {
-    height: 60,
-    width: "100%",
-    paddingLeft: 20,
-    paddingRight: 20,
-    fontSize: 16
-  },
-  searchbar_range: {
-    width: "100%",
-    paddingLeft: 20,
-    paddingRight: 20,
-    marginTop: -20
+    fontSize: 22,
+    textAlign: "center",
+    backgroundColor: "#E3E4E5",
+    paddingLeft: 10,
+    paddingTop: 10,
+    paddingBottom: 5,
+    marginTop: 0,
+    marginBottom: 0,
+    marginHorizontal: 16,
+    marginTop: 10,
+    color: "#013670"
   }
 });

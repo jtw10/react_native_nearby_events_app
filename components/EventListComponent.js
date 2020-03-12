@@ -42,7 +42,7 @@ export default class EventListComponent extends React.Component {
     }
   };
 
-  UNSAFE_componentWillMount() {
+  componentDidMount() {
     this._getLocationPermissions();
 
     navigator.geolocation.getCurrentPosition(
@@ -76,7 +76,6 @@ export default class EventListComponent extends React.Component {
                 events.push(responseJson._embedded.events[i]);
               }
             }
-            console.log("componentwillmount");
             this.setState({
               events: events,
               hashedLocation: hashedLocation
@@ -239,9 +238,15 @@ export default class EventListComponent extends React.Component {
             <TouchableOpacity
               onPress={() =>
                 this.props.navigation.navigate("Details", {
-                  someId: 100,
+                  eventName: item.name,
                   eventUrl: item.url,
-                  imageUrl: item.images[0].url
+                  eventDistance: item.distance,
+                  eventDate: item.dates.start.localDate,
+                  eventTime: item.dates.start.localTime,
+                  eventStatus: item.dates.status.code,
+                  eventInfo: item.info,
+                  imageUrl: item.images[0].url,
+                  event: item
                 })
               }
             >
