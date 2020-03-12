@@ -26,8 +26,7 @@ export default class EventListComponent extends Component {
       distance: 50,
       events: {},
       searchString: "",
-      searchDistance: 50,
-      refreshing: false
+      searchDistance: 50
     };
     this.updateSearch = this.updateSearch.bind(this);
   }
